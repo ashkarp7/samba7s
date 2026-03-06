@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <h2 class="logo">
+            <img src="assets/logo.png" alt="Logo">
+            SAMBA 7's
+        </h2>
+
+        <div class="nav">
+            <button class="home-btn" onclick="window.location.href='index.html'"><img src="assets/home.png"
+                    alt="Home"></button>
+        </div>
+    </nav>
+
+    <section class="matches-section">
+        <h2 class="section-title">Tournament Results</h2>
+
+        <div style="text-align: center; margin-bottom: 20px;">
+            <select id="groupFilter" onchange="loadAllResults()"
+                style="padding: 10px; border-radius: 5px; background: #222; color: #fff; border: 1px solid #d4ff00; font-weight: bold; font-family: 'Inter', sans-serif;">
+                <option value="ALL">All Groups</option>
+                <option value="A">Group A</option>
+                <option value="B">Group B</option>
+                <option value="C">Group C</option>
+                <option value="D">Group D</option>
+                <option value="E">Group E</option>
+                <option value="F">Group F</option>
+                <option value="KNOCKOUTS">Knockouts</option>
+            </select>
+        </div>
+
+        <div id="resultsList" style="max-width: 900px; margin: auto;"></div>
+    </section>
+
+    <script src="js/api.js"></script>
+    <script src="js/public.js"></script>
+    <script>
+        loadAllResults();
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixtures</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <h2 class="logo">
+            <img src="assets/logo.png" alt="Logo">
+            SAMBA 7's
+        </h2>
+
+        <div class="nav">
+            <button class="home-btn" onclick="window.location.href='index.html'"><img src="assets/home.png"
+                    alt="Home"></button>
+        </div>
+    </nav>
+
+
+    <section class="matches-section">
+
+        <h2 class="section-title">Fixtures</h2>
+
+
+        <div class="filter-buttons">
+            <select id="groupFilter" onchange="loadMatches()"
+                style="padding: 10px; font-size: 16px; background: #002b1f; color: white; border: 2px solid #eaff00; border-radius: 6px;">
+                <option value="ALL">All Groups</option>
+                <option value="A">Group A</option>
+                <option value="B">Group B</option>
+                <option value="C">Group C</option>
+                <option value="D">Group D</option>
+                <option value="E">Group E</option>
+                <option value="F">Group F</option>
+                <option value="KNOCKOUTS">Knockouts</option>
+            </select>
+        </div>
+
+        <div id="matchList" style="max-width: 900px; margin: auto;"></div>
+
+    </section>
+
+    <script src="js/filter.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/public.js"></script>
+    <script>
+        loadMatches();
+    </script>
+
+</body>
+
+</html>

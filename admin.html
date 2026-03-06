@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+
+</head>
+
+<body>
+
+    <div class="admin-container">
+
+        <script>
+
+            if (localStorage.getItem("adminLoggedIn") !== "true") {
+
+                window.location.href = "login.html";
+
+            }
+
+        </script>
+
+        <!-- SIDEBAR -->
+
+        <div class="sidebar">
+
+            <h2>SAMBA ADMIN</h2>
+
+            <ul>
+
+                <li onclick="showSection('dashboard')">Dashboard</li>
+
+                <li onclick="showSection('teams')">Teams</li>
+
+                <li onclick="showSection('matches')">Matches</li>
+
+                <li onclick="showSection('knockout')">Knockouts</li>
+
+                <li onclick="showSection('players')">Players</li>
+
+                <li onclick="showSection('results')">Results</li>
+
+                <li onclick="showSection('stats')">Stats</li>
+
+                <li onclick="showSection('standings')">Standings</li>
+
+                <li onclick="logout()">Logout</li>
+
+            </ul>
+
+        </div>
+
+
+
+        <!-- CONTENT -->
+
+        <div class="content">
+
+            <div id="dashboard" class="section">
+
+                <h2>Dashboard</h2>
+
+                <p>Welcome to Samba 7's admin panel</p>
+
+            </div>
+
+
+
+            <div id="teams" class="section">
+
+                <h2>Teams</h2>
+
+                <input id="teamName" placeholder="Team Name">
+
+                <select id="group">
+                    <option>A</option>
+                    <option>B</option>
+                    <option>C</option>
+                    <option>D</option>
+                    <option>E</option>
+                    <option>F</option>
+                </select>
+
+                <button onclick="createTeam()">Add Team</button>
+
+                <h3>Team List</h3>
+
+                <ul id="teamList"></ul>
+
+            </div>
+
+
+
+            <div id="matches" class="section">
+
+                <h2>Create Match</h2>
+
+                <select id="team1"></select>
+                <select id="team2"></select>
+
+                <select id="groupSelect" onchange="loadTeamsByGroup()">
+                    <option value="">Select Group</option>
+                    <option value="A">Group A</option>
+                    <option value="B">Group B</option>
+                    <option value="C">Group C</option>
+                    <option value="D">Group D</option>
+                    <option value="E">Group E</option>
+                    <option value="F">Group F</option>
+                </select>
+
+                <input type="datetime-local" id="matchTime">
+
+                <input type="hidden" id="editMatchId">
+                <button id="btnCreateMatch" onclick="addMatch()">Create Match</button>
+                <div id="btnUpdateMatch" style="display:none; gap: 10px;">
+                    <button onclick="updateMatchDetails()" style="background: #eaff00; flex: 1;">Update Match</button>
+                    <button onclick="cancelMatchEdit()" style="background: #555; color: white; flex: 1;">Cancel</button>
+                </div>
+
+                <h3>Matches</h3>
+                <select id="adminMatchFilter" onchange="loadMatches()">
+                    <option value="ALL">All Matches</option>
+                    <option value="A">Group A</option>
+                    <option value="B">Group B</option>
+                    <option value="C">Group C</option>
+                    <option value="D">Group D</option>
+                    <option value="E">Group E</option>
+                    <option value="F">Group F</option>
+                </select>
+                <ul id="matchList"></ul>
+
+            </div>
+
+
+
+            <div id="players" class="section">
+
+                <h2>Team Rosters (Max 12)</h2>
+
+                <div
+                    style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                    <select id="playerTeamSelect" onchange="loadPlayersForTeam()"></select>
+
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input id="newPlayerName" placeholder="New Player Name" style="margin: 0; flex-grow: 1;">
+                        <button onclick="addPlayer()">Add Player</button>
+                    </div>
+                </div>
+
+                <h3>Active Roster</h3>
+                <ul id="playerRosterList" style="list-style: none; padding: 0;"></ul>
+
+            </div>
+
+
+
+            <div id="results" class="section">
+
+                <h2>Update Match Result</h2>
+
+                <select id="resultGroupFilter" onchange="loadMatchesForResult()">
+                    <option value="ALL">All Matches</option>
+                    <option value="A">Group A</option>
+                    <option value="B">Group B</option>
+                    <option value="C">Group C</option>
+                    <option value="D">Group D</option>
+                    <option value="E">Group E</option>
+                    <option value="F">Group F</option>
+                    <option value="KNOCKOUTS">Knockouts</option>
+                </select>
+
+                <select id="resultMatch" onchange="loadPlayersForMatch()"></select>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <input type="number" id="score1" placeholder="Team 1 Score" style="margin: 0; flex: 1;"
+                        oninput="checkKnockoutDraw()">
+                    <input type="number" id="score2" placeholder="Team 2 Score" style="margin: 0; flex: 1;"
+                        oninput="checkKnockoutDraw()">
+                </div>
+
+                <div id="knockoutResolution"
+                    style="display: none; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 6px; margin-bottom: 15px; border-left: 4px solid #eaff00;">
+                    <h4 style="margin: 0 0 10px 0; color: #eaff00;">Knockout Resolution (Draw)</h4>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="number" id="penalties1" placeholder="Team 1 Pens" style="margin: 0; flex: 1;">
+                        <input type="number" id="penalties2" placeholder="Team 2 Pens" style="margin: 0; flex: 1;">
+                    </div>
+                    <select id="tossWinner" style="margin: 0; width: 100%;">
+                        <option value="">-- Toss Winner (If Penalties Tied) --</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 5px;">
+                    <label style="color: #ccc; font-size: 14px;">Team 1 Scorers</label>
+                    <ul id="t1ScorersList" style="list-style: none; padding: 0; margin: 5px 0;"></ul>
+                    <div style="display: flex; gap: 5px;">
+                        <select id="t1ScorerSelect" style="flex: 1; padding: 5px;"></select>
+                        <button onclick="addScorer(1)" style="padding: 5px;">Add</button>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #ccc; font-size: 14px;">Team 2 Scorers</label>
+                    <ul id="t2ScorersList" style="list-style: none; padding: 0; margin: 5px 0;"></ul>
+                    <div style="display: flex; gap: 5px;">
+                        <select id="t2ScorerSelect" style="flex: 1; padding: 5px;"></select>
+                        <button onclick="addScorer(2)" style="padding: 5px;">Add</button>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                    <label style="color: #ccc; font-size: 14px;">Man of the Match</label>
+                    <select id="motm"></select>
+                </div>
+
+                <button onclick="updateResult()">Update Result</button>
+
+                <h3 style="margin-top: 40px; border-top: 1px solid #333; padding-top: 20px;">Recently Completed Results
+                </h3>
+                <ul id="completedMatchesList"></ul>
+
+            </div>
+
+            <div id="stats" class="section">
+
+                <h2>Edit Individual Stats</h2>
+
+                <div
+                    style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                    <select id="statsTeamSelect" onchange="loadPlayerStatsForTeam()"></select>
+                </div>
+
+                <div id="statsPlayerContainer"></div>
+
+            </div>
+
+            <div id="standings" class="section">
+
+                <h2>Edit Standings (Overrides)</h2>
+                <div id="adminStandingsTables" style="margin-top: 20px;"></div>
+
+            </div>
+
+            <div id="knockout" class="section">
+
+                <h2>Create Knockout Match</h2>
+
+                <select id="koTeam1"></select>
+                <select id="koTeam2"></select>
+
+                <select id="koRound">
+                    <option>PREQUARTER</option>
+                    <option>QUARTER</option>
+                    <option>SEMI</option>
+                    <option>FINAL</option>
+                </select>
+
+                <input type="datetime-local" id="koTime">
+
+                <button onclick="createKnockout()">Create Match</button>
+
+                <h3>Knockout Matches</h3>
+
+                <ul id="knockoutList"></ul>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="js/admin.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/adminTeams.js"></script>
+    <script src="js/adminPlayers.js"></script>
+    <script src="js/adminStats.js"></script>
+    <script src="js/adminMatches.js"></script>
+    <script src="js/adminStandings.js"></script>
+    <script src="js/adminKnockout.js"></script>
+
+</body>
+
+</html>

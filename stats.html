@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament Stats</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <h2 class="logo">
+            <img src="assets/logo.png" alt="Logo">
+            SAMBA 7's
+        </h2>
+
+        <div class="nav">
+            <button class="home-btn" onclick="window.location.href='index.html'"><img src="assets/home.png"
+                    alt="Home"></button>
+        </div>
+    </nav>
+
+    <h1 class="page-title">Player Leaderboards</h1>
+
+    <section class="matches-section">
+        <h2 class="section-title">Top Goal Scorers</h2>
+        <div id="topGoalScorers" class="matches-grid"></div>
+    </section>
+
+    <section class="matches-section" style="padding-top: 0px;">
+        <h2 class="section-title">Most Clean Sheets</h2>
+        <div id="topCleanSheets" class="matches-grid"></div>
+    </section>
+
+    <script src="js/api.js"></script>
+    <script src="js/public.js"></script>
+    <script>
+        loadStats();
+    </script>
+
+</body>
+
+</html>

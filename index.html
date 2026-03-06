@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Samba 7's Tournament</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+
+</head>
+
+<body>
+    <!-- Splash Screen -->
+    <div class="splash-screen">
+        <img src="assets/logo.png" alt="Samba 7's Logo" class="splash-logo">
+        <div class="splash-text">SAMBA 7's</div>
+    </div>
+
+    <nav class="navbar">
+        <h2 class="logo">
+            <img src="assets/logo.png" alt="Logo">
+            SAMBA 7's
+        </h2>
+    </nav>
+
+
+    <section class="hero">
+
+        <div class="hero-content">
+
+            <h1 class="title">
+                ENTER THE ARENA
+            </h1>
+
+            <p class="subtitle">
+                24 Teams • 6 Groups • 1 Champion
+            </p>
+
+            <div id="countdown" class="hero-countdown">
+                <span id="days">0</span>d <span id="hours">0</span>h <span id="minutes">0</span>m
+            </div>
+
+            <div class="nav"
+                style="margin-top: 35px; display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;">
+                <button class="btn" style="min-width: 120px; font-size: 16px;"
+                    onclick="openPage('fixtures')">Fixtures</button>
+                <button class="btn" style="min-width: 120px; font-size: 16px;"
+                    onclick="openPage('table')">Table</button>
+                <button class="btn" style="min-width: 120px; font-size: 16px;"
+                    onclick="openPage('results')">Results</button>
+                <button class="btn" style="min-width: 120px; font-size: 16px;"
+                    onclick="openPage('stats')">Stats</button>
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <section class="matches-section">
+        <h2 class="section-title">Upcoming Matches</h2>
+        <div id="upcomingMatches" class="matches-grid"></div>
+    </section>
+    <section class="matches-section">
+        <h2 class="section-title">Latest Results</h2>
+        <div id="latestResults" class="matches-grid"></div>
+    </section>
+
+
+
+    <script src="js/countdown.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/public.js"></script>
+    <script src="js/navigation.js"></script>
+    <script>
+        startCountdown();
+        loadUpcomingMatches();
+        loadLatestResults();
+    </script>
+</body>
+
+</html>

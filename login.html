@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .login-container {
+
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+        }
+
+        .login-box {
+
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            width: 300px;
+
+        }
+
+        .login-box h2 {
+
+            font-family: 'Bebas Neue';
+            margin-bottom: 20px;
+
+        }
+
+        .login-box input {
+
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+
+        }
+
+        .login-box button {
+
+            width: 100%;
+            padding: 10px;
+            background: #eaff00;
+            border: none;
+            cursor: pointer;
+
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="login-container">
+
+        <div class="login-box">
+
+            <h2>ADMIN LOGIN</h2>
+
+            <input id="username" placeholder="Username">
+
+            <input id="password" type="password" placeholder="Password">
+
+            <button onclick="login()">Login</button>
+
+            <p id="error"></p>
+
+        </div>
+
+    </div>
+
+    <script src="js/login.js"></script>
+
+</body>
+
+</html>
