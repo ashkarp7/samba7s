@@ -1,4 +1,4 @@
-const API = "http://localhost:5000";
+const API = "https://samba7s.onrender.com";
 
 async function getTeams() {
 
