@@ -1,5 +1,11 @@
 const API = "https://samba7s.onrender.com";
 
+// Fires instantly on page load to wake Render out of cold start
+// before any real data request is made.
+(function wakeUpServer() {
+    fetch(`${API}/ping`).catch(() => { }); // silent — just warming the server
+})();
+
 async function getTeams() {
 
     const res = await fetch(`${API}/teams`);

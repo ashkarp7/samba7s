@@ -20,6 +20,9 @@ app.use("/players", playerRoutes);
 app.use("/matches", matchRoutes);
 app.use("/standings", standingsRoutes);
 
+// Keep-alive health check — used by cron jobs to prevent Render cold starts
+app.get("/ping", (req, res) => res.json({ status: "ok", ts: Date.now() }));
+
 app.listen(5000, () => {
     console.log("Server running on port 5000");
 });

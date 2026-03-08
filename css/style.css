@@ -367,39 +367,155 @@ tr:hover {
     justify-content: center;
     align-items: center;
     z-index: 9999;
-    animation: fadeOut 1s ease-in-out 2.5s forwards;
     pointer-events: none;
+    animation: splashFadeOut 0.7s ease-in-out 3.4s forwards;
+    overflow: hidden;
 }
 
-.splash-logo {
-    width: 200px;
-    padding: 10px;
-    animation: zoomIn 1.5s ease-out forwards;
+/* Horizontal neon line that sweeps across — top */
+.splash-line {
+    position: absolute;
+    top: 42%;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, #eaff00, transparent);
+    animation: lineSweep 0.5s ease-out 0.2s forwards;
 }
 
-.splash-text {
-    margin-top: 20px;
-    font-family: 'Bebas Neue';
-    font-size: 40px;
-    letter-spacing: 4px;
+/* Bottom mirror line */
+.splash-line-bottom {
+    top: auto;
+    bottom: 39%;
+    animation: lineSweepReverse 0.5s ease-out 0.2s forwards;
+}
+
+/* The big SAMBA 26 title row */
+.splash-title {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    line-height: 0.85;
+}
+
+/* SAMBA — crashes in from the left */
+.splash-samba {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(80px, 18vw, 160px);
     color: #eaff00;
+    transform: scaleY(1.15) translateX(-120vw);
     opacity: 0;
-    animation: fadeIn 1s ease-in-out 1s forwards;
+    display: inline-block;
+    letter-spacing: -2px;
+    animation: sambaSlam 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.55s forwards;
 }
 
-@keyframes zoomIn {
+/* 26 — slams in from the right with a flip */
+.splash-26 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(80px, 18vw, 160px);
+    color: #fff;
+    transform: scaleY(1.15) translateX(120vw) rotateY(90deg);
+    opacity: 0;
+    display: inline-block;
+    animation: twentySixFlip 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.75s forwards;
+}
+
+/* Subtitle — rises up and fades in */
+.splash-sub {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: clamp(10px, 2vw, 14px);
+    color: #eaff00;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    border-top: 1px solid rgba(234, 255, 0, 0.5);
+    border-bottom: 1px solid rgba(234, 255, 0, 0.5);
+    padding: 5px 16px;
+    margin-top: 14px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: subRise 0.5s ease-out 1.25s forwards;
+}
+
+/* Glow pulse on SAMBA after landing */
+@keyframes sambaSlam {
     0% {
-        transform: scale(0.5);
+        transform: scaleY(1.15) translateX(-120vw);
         opacity: 0;
     }
 
-    100% {
-        transform: scale(1);
+    70% {
+        transform: scaleY(1.15) translateX(6px);
         opacity: 1;
+    }
+
+    85% {
+        transform: scaleY(1.15) translateX(-3px);
+    }
+
+    100% {
+        transform: scaleY(1.15) translateX(0);
+        opacity: 1;
+        text-shadow: 0 0 40px rgba(234, 255, 0, 0.8), 0 0 80px rgba(234, 255, 0, 0.4);
     }
 }
 
-@keyframes fadeIn {
+@keyframes twentySixFlip {
+    0% {
+        transform: scaleY(1.15) translateX(120vw) rotateY(90deg);
+        opacity: 0;
+    }
+
+    65% {
+        transform: scaleY(1.15) translateX(-5px) rotateY(0deg);
+        opacity: 1;
+    }
+
+    82% {
+        transform: scaleY(1.15) translateX(3px);
+    }
+
+    100% {
+        transform: scaleY(1.15) translateX(0) rotateY(0deg);
+        opacity: 1;
+        text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    }
+}
+
+@keyframes lineSweep {
+    0% {
+        left: -100%;
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 1;
+    }
+
+    100% {
+        left: 100%;
+        opacity: 0;
+    }
+}
+
+@keyframes lineSweepReverse {
+    0% {
+        left: 100%;
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 1;
+    }
+
+    100% {
+        left: -100%;
+        opacity: 0;
+    }
+}
+
+@keyframes subRise {
     0% {
         opacity: 0;
         transform: translateY(20px);
@@ -411,7 +527,7 @@ tr:hover {
     }
 }
 
-@keyframes fadeOut {
+@keyframes splashFadeOut {
     0% {
         opacity: 1;
     }
@@ -420,4 +536,127 @@ tr:hover {
         opacity: 0;
         visibility: hidden;
     }
+}
+
+/* MOBILE RESPONSIVE FIXES FOR SPLASH HEADER */
+@media (max-width: 600px) {
+    .samba-main-text {
+        font-size: 80px !important;
+    }
+
+    .samba-26-text {
+        font-size: 80px !important;
+        transform: scaleY(1.2) !important;
+    }
+
+    .samba-subtitle {
+        font-size: 14px !important;
+        letter-spacing: 2px !important;
+        padding: 4px 10px !important;
+        margin-top: -10px !important;
+        word-wrap: break-word;
+        max-width: 90vw;
+    }
+
+    .tournament-info {
+        padding: 15px 10px !important;
+        width: 95% !important;
+        font-size: 13px !important;
+    }
+
+    .tournament-info h3 {
+        font-size: 20px !important;
+        line-height: 1.1;
+    }
+
+    .hero {
+        height: auto;
+        min-height: 100vh;
+        padding: 40px 0;
+    }
+}
+
+/* ── NAVBAR ENTRY ANIMATIONS ── */
+
+@keyframes slideInLeft {
+    0% {
+        opacity: 0;
+        transform: scaleY(1.2) translateX(-60px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scaleY(1.2) translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    0% {
+        opacity: 0;
+        transform: scaleY(1.2) translateX(60px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scaleY(1.2) translateX(0);
+    }
+}
+
+@keyframes revealWidth {
+    0% {
+        max-width: 0;
+        opacity: 0;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    60% {
+        opacity: 1;
+    }
+
+    100% {
+        max-width: 400px;
+        opacity: 1;
+    }
+}
+
+@keyframes fadeUpLogo {
+    0% {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Logo image fades up */
+.navbar .logo img {
+    animation: fadeUpLogo 0.6s ease-out both;
+}
+
+/* "SAMBA" slides in from the left */
+.navbar-samba {
+    display: inline-block;
+    opacity: 0;
+    animation: slideInLeft 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+}
+
+/* "26" slides in from the right */
+.navbar-26 {
+    display: inline-block;
+    opacity: 0;
+    animation: slideInRight 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
+}
+
+/* Subtitle bar reveals width like a typewriter bar */
+.navbar-subtitle {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 0;
+    opacity: 0;
+    animation: revealWidth 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.85s both;
 }

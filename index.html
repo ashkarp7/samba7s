@@ -18,48 +18,74 @@
 <body>
     <!-- Splash Screen -->
     <div class="splash-screen">
-        <img src="assets/logo.png" alt="Samba 7's Logo" class="splash-logo">
-        <div class="splash-text">SAMBA 7's</div>
+        <div class="splash-line"></div>
+        <div class="splash-title">
+            <span class="splash-samba">SAMBA</span>
+            <span class="splash-26">26</span>
+        </div>
+        <div class="splash-sub">7's Football Tournament</div>
+        <div class="splash-line splash-line-bottom"></div>
     </div>
 
     <nav class="navbar">
         <h2 class="logo">
-            <img src="assets/logo.png" alt="Logo">
-            SAMBA 7's
+            <img src="assets/logo.png" alt="Logo" style="height: 50px;">
+            <div style="display: flex; flex-direction: column; align-items: flex-start; margin-top: 5px;">
+                <div
+                    style="font-family: 'Bebas Neue', sans-serif; line-height: 0.8; color: #eaff00; letter-spacing: -1px; display: flex; align-items: flex-end; text-shadow: 0 0 10px rgba(234, 255, 0, 0.4);">
+                    <span class="navbar-samba" style="font-size: 40px; transform: scaleY(1.2);">SAMBA</span>
+                    <span class="navbar-26" style="font-size: 40px; margin-left: 6px; transform: scaleY(1.2);">26</span>
+                </div>
+                <div class="navbar-subtitle"
+                    style="font-family: 'Inter', sans-serif; font-weight: 800; font-size: 10px; color: #eaff00; letter-spacing: 2.5px; border: 1px solid #eaff00; border-left: none; border-right: none; padding: 2px 4px; margin-top: 6px; background: rgba(0,0,0,0.4); text-transform: uppercase;">
+                    7's Football Tournament
+                </div>
+            </div>
         </h2>
     </nav>
 
 
     <section class="hero">
+        <div class="hero-content" style="padding-top: 20px;">
 
-        <div class="hero-content">
-
-            <h1 class="title">
-                ENTER THE ARENA
+            <h1 class="title"
+                style="font-size: 140px; margin-bottom: 20px; text-shadow: 0 0 20px rgba(234, 255, 0, 0.4); display: flex; justify-content: center; align-items: flex-end; line-height: 0.8; letter-spacing: -2px;">
+                <span class="samba-main-text" style="color: #eaff00; transform: scaleY(1.2);">SAMBA</span>
+                <span class="samba-26-text"
+                    style="color: #fff; font-size: 140px; margin-left: 10px; transform: scaleY(1.2);">26</span>
             </h1>
 
-            <p class="subtitle">
-                24 Teams • 6 Groups • 1 Champion
-            </p>
-
-            <div id="countdown" class="hero-countdown">
-                <span id="days">0</span>d <span id="hours">0</span>h <span id="minutes">0</span>m
+            <div
+                style="width: 100%; max-width: 500px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 15px;">
+                <div
+                    style="height: 1px; flex: 1; background: linear-gradient(to right, transparent, rgba(234, 255, 0, 0.5));">
+                </div>
+                <span
+                    style="font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: #eaff00; letter-spacing: 4px; text-shadow: 0 0 10px rgba(234, 255, 0, 0.5);">ENTER
+                    THE ARENA</span>
+                <div
+                    style="height: 1px; flex: 1; background: linear-gradient(to left, transparent, rgba(234, 255, 0, 0.5));">
+                </div>
             </div>
 
             <div class="nav"
-                style="margin-top: 35px; display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;">
-                <button class="btn" style="min-width: 120px; font-size: 16px;"
-                    onclick="openPage('fixtures')">Fixtures</button>
-                <button class="btn" style="min-width: 120px; font-size: 16px;"
-                    onclick="openPage('table')">Table</button>
-                <button class="btn" style="min-width: 120px; font-size: 16px;"
-                    onclick="openPage('results')">Results</button>
-                <button class="btn" style="min-width: 120px; font-size: 16px;"
-                    onclick="openPage('stats')">Stats</button>
+                style="margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto;">
+                <div style="display: flex; width: 100%; justify-content: center; gap: 15px;">
+                    <button class="btn" style="flex: 1; font-size: 18px; padding: 15px;"
+                        onclick="openPage('fixtures')">Fixtures</button>
+                    <button class="btn" style="flex: 1; font-size: 18px; padding: 15px;"
+                        onclick="openPage('table')">Table</button>
+                </div>
+
+                <div style="display: flex; width: 100%; justify-content: center; gap: 15px;">
+                    <button class="btn" style="flex: 1; font-size: 18px; padding: 15px;"
+                        onclick="openPage('results')">Results</button>
+                    <button class="btn" style="flex: 1; font-size: 18px; padding: 15px;"
+                        onclick="openPage('stats')">Stats</button>
+                </div>
             </div>
 
         </div>
-
     </section>
 
 
@@ -75,12 +101,10 @@
 
 
 
-    <script src="js/countdown.js"></script>
     <script src="js/api.js"></script>
     <script src="js/public.js"></script>
     <script src="js/navigation.js"></script>
     <script>
-        startCountdown();
         loadUpcomingMatches();
         loadLatestResults();
     </script>
