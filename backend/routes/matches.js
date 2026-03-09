@@ -105,6 +105,33 @@ router.put("/:id/details", async (req, res) => {
     }
 });
 
+// CLEAR RESULT
+router.put("/:id/clear", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const matchRes = await db.query("SELECT round FROM matches WHERE id=$1", [id]);
+        const round = matchRes.rows.length > 0 ? matchRes.rows[0].round : null;
+
+        await db.query(`
+            UPDATE matches 
+            SET team1_score = NULL, team2_score = NULL, team1_scorers = NULL, 
+                team2_scorers = NULL, motm = NULL, team1_penalties = NULL, 
+                team2_penalties = NULL, toss_winner_id = NULL 
+            WHERE id = $1
+        `, [id]);
+
+        if (round === "GROUP" || round?.startsWith("Round")) {
+            await recalculateStandings();
+        }
+
+        res.json({ message: "Match result cleared and standings updated" });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server Error");
+    }
+});
+
 // DELETE MATCH
 router.delete("/:id", async (req, res) => {
     const { id } = req.params;

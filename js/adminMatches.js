@@ -147,7 +147,10 @@ async function loadMatchesForResult() {
             const noLabel = match.match_no ? `Match ${match.match_no} - ` : "";
             li.innerHTML = `
                 <span><strong>${match.team1_score} - ${match.team2_score}</strong> | ${noLabel}${match.team1} vs ${match.team2}</span>
-                <button onclick="editMatchResult(${match.id})" style="padding: 5px 10px; background: #eaff00; color: black; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">Edit Score</button>
+                <div>
+                    <button onclick="editMatchResult(${match.id})" style="padding: 5px 10px; background: #eaff00; color: black; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">Edit Score</button>
+                    <button onclick="clearMatchResult(${match.id})" style="padding: 5px 10px; background: #ff4d4d; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-left: 5px;">Clear Result</button>
+                </div>
             `;
             completedList.appendChild(li);
         });
@@ -209,6 +212,29 @@ async function updateResult() {
     } catch (err) {
         console.error("Failed to update result:", err);
         alert("Error updating result.");
+    }
+}
+
+async function clearMatchResult(id) {
+    if (!confirm("Are you sure you want to completely clear this match result? This will reverse the points in the standings.")) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/matches/${id}/clear`, {
+            method: "PUT"
+        });
+
+        if (res.ok) {
+            alert("Match result cleared successfully!");
+            if (window.reloadAdminStandings) window.reloadAdminStandings();
+            loadMatchesForResult();
+        } else {
+            alert("Failed to clear result.");
+        }
+    } catch (err) {
+        console.error("Error clearing result:", err);
+        alert("Error clearing result.");
     }
 }
 
