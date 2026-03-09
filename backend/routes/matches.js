@@ -67,6 +67,15 @@ router.put("/:id", async (req, res) => {
         const { team1_score, team2_score, team1_scorers, team2_scorers, motm, team1_penalties, team2_penalties, toss_winner_id } = req.body;
         const { id } = req.params;
 
+        // Grab the round first to determine if we recalculate standings later
+        const matchRes = await db.query("SELECT round FROM matches WHERE id=$1", [id]);
+        const round = matchRes.rows.length > 0 ? matchRes.rows[0].round : null;
+
+        await db.query(
+            "UPDATE matches SET team1_score=$1, team2_score=$2, team1_scorers=$3, team2_scorers=$4, motm=$5, team1_penalties=$6, team2_penalties=$7, toss_winner_id=$8 WHERE id=$9",
+            [team1_score, team2_score, team1_scorers, team2_scorers, motm, team1_penalties, team2_penalties, toss_winner_id, id]
+        );
+
         // Recalculate standings table from scratch
         if (round === "GROUP" || round?.startsWith("Round")) {
             await recalculateStandings();
