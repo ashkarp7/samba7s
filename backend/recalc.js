@@ -1,12 +1,12 @@
 require("dotenv").config();
 const db = require("./db"); // assuming inside backend dir
 
-async function fix() {
+async function recalculateStandings() {
     // 1. Reset all standings to 0
     await db.query("UPDATE standings SET played=0, wins=0, draws=0, losses=0, goals_for=0, goals_against=0, goal_diff=0, points=0");
 
-    // 2. Get all group matches with a valid score
-    const res = await db.query("SELECT * FROM matches WHERE round='GROUP' AND team1_score IS NOT NULL AND team2_score IS NOT NULL");
+    // 2. Get all group/league matches with a valid score
+    const res = await db.query("SELECT * FROM matches WHERE (round='GROUP' OR round LIKE 'Round%') AND team1_score IS NOT NULL AND team2_score IS NOT NULL");
     const matches = res.rows;
 
     for (const m of matches) {
@@ -30,8 +30,7 @@ async function fix() {
     }
 
     await db.query("UPDATE standings SET goal_diff = goals_for - goals_against");
-    console.log("Standings recalculated cleanly.");
-    process.exit();
+    console.log("Standings recalculated.");
 }
 
-fix();
+module.exports = { recalculateStandings };

@@ -5,77 +5,52 @@ async function loadStandings() {
         const data = await res.json();
 
         const container = document.getElementById("groups");
-
         if (!container) return;
 
         container.innerHTML = "";
 
-        const groups = {
-            "A": [], "B": [], "C": [], "D": [], "E": [], "F": []
-        };
+        const table = document.createElement("table");
+        table.innerHTML = `
+            <thead>
+                    <th>Pos</th>
+                    <th>Team</th>
+                    <th>P</th>
+                    <th>W</th>
+                    <th>D</th>
+                    <th>L</th>
+                    <th>GD</th>
+                    <th>PTS</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        `;
 
-        data.forEach(team => {
-            if (groups[team.group_name]) {
-                groups[team.group_name].push(team);
-            } else {
-                groups[team.group_name] = [team];
-            }
-        });
-
-        for (const group in groups) {
-            const groupDiv = document.createElement("div");
-
-            groupDiv.innerHTML = `<h2>Group ${group}</h2>`;
-
-            const table = document.createElement("table");
-
-            table.innerHTML = `
-                <thead>
-                    <tr>
-                        <th>Team</th>
-                        <th>P</th>
-                        <th>W</th>
-                        <th>D</th>
-                        <th>L</th>
-                        <th>GD</th>
-                        <th>PTS</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            `;
-
-            if (groups[group].length === 0) {
-                // Render an empty 'blank' row if no teams are in this group yet.
+        if (data.length === 0) {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td colspan="8" style="text-align:center; opacity:0.5;">No teams yet</td>`;
+            table.querySelector("tbody").appendChild(row);
+        } else {
+            data.sort((a, b) => {
+                if (b.points !== a.points) return b.points - a.points;
+                if (b.goal_diff !== a.goal_diff) return b.goal_diff - a.goal_diff;
+                return b.goals_for - a.goals_for;
+            }).forEach((team, index) => {
                 const row = document.createElement("tr");
                 row.innerHTML = `
-                    <td>-</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
+                    <td style="font-weight: bold; color: #888;">${index + 1}</td>
+                    <td>${team.name}</td>
+                    <td>${team.played}</td>
+                    <td>${team.wins}</td>
+                    <td>${team.draws}</td>
+                    <td>${team.losses}</td>
+                    <td>${team.goal_diff}</td>
+                    <td>${team.points}</td>
                 `;
                 table.querySelector("tbody").appendChild(row);
-            } else {
-                groups[group].forEach(team => {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td>${team.name}</td>
-                        <td>${team.played}</td>
-                        <td>${team.wins}</td>
-                        <td>${team.draws}</td>
-                        <td>${team.losses}</td>
-                        <td>${team.goal_diff}</td>
-                        <td>${team.points}</td>
-                    `;
-                    table.querySelector("tbody").appendChild(row);
-                });
-            }
-
-            groupDiv.appendChild(table);
-            container.appendChild(groupDiv);
+            });
         }
+
+        container.appendChild(table);
     } catch (err) {
         console.error("Failed to load standings:", err);
     }
@@ -85,8 +60,6 @@ async function loadMatches() {
     const res = await fetch(`${API}/matches`);
     const matches = await res.json();
 
-    const groupFilter = document.getElementById("groupFilter")?.value || "ALL";
-
     const container = document.getElementById("matchList");
     if (!container) return;
 
@@ -95,30 +68,40 @@ async function loadMatches() {
     const groupedMatches = { GROUP: [], PREQUARTER: [], QUARTER: [], SEMI: [], FINAL: [] };
     const roundsMap = { PREQUARTER: "PRE-QUARTER FINALS", QUARTER: "QUARTER FINALS", SEMI: "SEMI FINALS", FINAL: "FINALS" };
 
+    let filterVal = document.getElementById("roundFilter") ? document.getElementById("roundFilter").value : "ALL";
+
     matches.forEach(m => {
+        if (filterVal !== "ALL") {
+            const isLeagueMatch = m.round === "GROUP" || m.round?.startsWith("Round");
+            if (filterVal === "KNOCKOUTS" && isLeagueMatch) return;
+            if (filterVal !== "KNOCKOUTS" && m.round !== filterVal) return;
+        }
+
         let r = m.round || "GROUP";
         if (!groupedMatches[r]) r = "GROUP";
-
-        if (groupFilter === "ALL") {
-            groupedMatches[r].push(m);
-        } else if (groupFilter === "KNOCKOUTS") {
-            if (r !== "GROUP") groupedMatches[r].push(m);
-        } else {
-            if (r === "GROUP" && m.group_name === groupFilter) {
-                groupedMatches[r].push(m);
-            }
-        }
+        groupedMatches[r].push(m);
     });
 
     const renderCard = (match) => {
         const div = document.createElement("div");
-        div.className = "match-card"; // Re-added style class for CSS spacing
+        div.className = "match-card";
         div.style.flexDirection = "column";
 
-        const date = new Date(match.match_time);
-        const formattedDate = date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        let formattedDate = "TBD";
+        if (match.match_time) {
+            const date = new Date(match.match_time);
+            if (!isNaN(date.getTime()) && date.getFullYear() > 2010) {
+                formattedDate = date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+        }
 
-        let matchTypeLabel = match.round === "GROUP" ? "Group Stage: Group " + match.group_name : (roundsMap[match.round] || match.round);
+        const isLeague = match.round === "GROUP" || match.round?.startsWith("Round");
+        let roundStr = isLeague && match.round !== "GROUP" ? match.round : "League Stage";
+        let matchTypeLabel = isLeague ? roundStr : (roundsMap[match.round] || match.round);
+
+        if (match.match_no) {
+            matchTypeLabel = `Match ${match.match_no} - ${matchTypeLabel}`;
+        }
 
         div.innerHTML = `
             <div style="width: 100%;">
@@ -128,7 +111,7 @@ async function loadMatches() {
                     <div style="flex: 1; text-align: left; word-wrap: break-word;">${match.team2}</div>
                 </div>
                 <div class="match-time" style="text-align: center; font-size: 10px; color: #666; margin-top: 8px;">
-                    ${matchTypeLabel} • ${match.team1_score !== null ? 'FT • ' : ''}${match.match_time ? formattedDate : ""}
+                    ${matchTypeLabel} • ${match.team1_score !== null ? 'FT • ' : ''}${formattedDate}
                 </div>
             </div>
         `;
@@ -168,10 +151,21 @@ async function loadUpcomingMatches() {
         .filter(m => new Date(m.match_time) > now)
         .slice(0, 5)
         .forEach(match => {
-            const date = new Date(match.match_time);
-            const formatted = date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            let formatted = "TBD";
+            if (match.match_time) {
+                const date = new Date(match.match_time);
+                if (!isNaN(date.getTime()) && date.getFullYear() > 2010) {
+                    formatted = date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+            }
 
-            let matchTypeLabel = match.round === "GROUP" ? "Group Stage: Group " + match.group_name : (roundsMap[match.round] || match.round);
+            const isLeague = match.round === "GROUP" || match.round?.startsWith("Round");
+            let roundStr = isLeague && match.round !== "GROUP" ? match.round : "League Stage";
+            let matchTypeLabel = isLeague ? roundStr : (roundsMap[match.round] || match.round);
+
+            if (match.match_no) {
+                matchTypeLabel = `Match ${match.match_no} - ${matchTypeLabel}`;
+            }
 
             const card = document.createElement("div");
             card.className = "match-card"; // preserve original styling
@@ -183,7 +177,6 @@ async function loadUpcomingMatches() {
                         <div style="flex: 1; text-align: right; word-wrap: break-word;">${match.team1}</div>
                         <div style="margin: 0 15px; color: #d4ff00; white-space: nowrap;">VS</div>
                         <div style="flex: 1; text-align: left; word-wrap: break-word;">${match.team2}</div>
-                    </div>
                     <div class="match-time" style="text-align: center; font-size: 10px; color: #666; margin-top: 8px;">
                         ${matchTypeLabel} • ${formatted}
                     </div>
@@ -215,7 +208,13 @@ async function loadLatestResults() {
             card.style.cursor = "pointer";
             card.style.flexDirection = "column";
 
-            let matchTypeLabel = match.round === "GROUP" ? "Group Stage: Group " + match.group_name : (roundsMap[match.round] || match.round);
+            const isLeague = match.round === "GROUP" || match.round?.startsWith("Round");
+            let roundStr = isLeague && match.round !== "GROUP" ? match.round : "League Stage";
+            let matchTypeLabel = isLeague ? roundStr : (roundsMap[match.round] || match.round);
+
+            if (match.match_no) {
+                matchTypeLabel = `Match ${match.match_no} - ${matchTypeLabel}`;
+            }
 
             let detailsHTML = `<div id="details-${match.id}" style="display: none; border-top: 1px solid #330; margin-top: 15px; padding-top: 15px; width: 100%;">`;
             let hasDetails = false;
@@ -342,24 +341,21 @@ async function loadAllResults() {
 
     container.innerHTML = "";
 
-    const groupFilter = document.getElementById("groupFilter")?.value || "ALL";
-
     const groupedMatches = { GROUP: [], PREQUARTER: [], QUARTER: [], SEMI: [], FINAL: [] };
     const roundsMap = { PREQUARTER: "PRE-QUARTER FINALS", QUARTER: "QUARTER FINALS", SEMI: "SEMI FINALS", FINAL: "FINALS" };
 
+    let filterVal = document.getElementById("roundFilter") ? document.getElementById("roundFilter").value : "ALL";
+
     matches.filter(m => m.team1_score !== null).forEach(m => {
+        if (filterVal !== "ALL") {
+            const isLeagueMatch = m.round === "GROUP" || m.round?.startsWith("Round");
+            if (filterVal === "KNOCKOUTS" && isLeagueMatch) return;
+            if (filterVal !== "KNOCKOUTS" && m.round !== filterVal) return;
+        }
+
         let r = m.round || "GROUP";
         if (!groupedMatches[r]) r = "GROUP";
-
-        if (groupFilter === "ALL") {
-            groupedMatches[r].push(m);
-        } else if (groupFilter === "KNOCKOUTS") {
-            if (r !== "GROUP") groupedMatches[r].push(m);
-        } else {
-            if (r === "GROUP" && m.group_name === groupFilter) {
-                groupedMatches[r].push(m);
-            }
-        }
+        groupedMatches[r].push(m);
     });
 
     const renderCard = (match) => {
@@ -368,8 +364,13 @@ async function loadAllResults() {
         div.style.cursor = "pointer";
         div.style.flexDirection = "column";
 
-        const date = new Date(match.match_time);
-        const formattedDate = date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        let formattedDate = "TBD";
+        if (match.match_time) {
+            const date = new Date(match.match_time);
+            if (!isNaN(date.getTime()) && date.getFullYear() > 2010) {
+                formattedDate = date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+        }
 
         let detailsHTML = `<div id="details-all-${match.id}" style="display: none; border-top: 1px solid #330; margin-top: 15px; padding-top: 15px; width: 100%;">`;
         let hasDetails = false;
@@ -412,7 +413,13 @@ async function loadAllResults() {
             div.style.cursor = "default";
         }
 
-        let matchTypeLabel = match.round === "GROUP" ? "Group Stage: Group " + match.group_name : (roundsMap[match.round] || match.round);
+        const isLeague = match.round === "GROUP" || match.round?.startsWith("Round");
+        let roundStr = isLeague && match.round !== "GROUP" ? match.round : "League Stage";
+        let matchTypeLabel = isLeague ? roundStr : (roundsMap[match.round] || match.round);
+
+        if (match.match_no) {
+            matchTypeLabel = `Match ${match.match_no} - ${matchTypeLabel}`;
+        }
 
         let knockoutResHTML = "";
         if (match.team1_penalties !== null && match.team2_penalties !== null) {
@@ -433,7 +440,7 @@ async function loadAllResults() {
                 </div>
                 ${knockoutResHTML}
                 <div class="match-time" style="text-align: center; font-size: 10px; color: #666; margin-top: 8px;">
-                    ${matchTypeLabel} • FT • ${match.match_time ? formattedDate : ""}
+                    ${matchTypeLabel} • FT • ${formattedDate}
                 </div>
             </div>
             ${detailsHTML}

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
+const { recalculateStandings } = require("../recalc");
 
 // GET matches
 router.get("/", async (req, res) => {
@@ -8,6 +9,7 @@ router.get("/", async (req, res) => {
         const matches = await db.query(`
             SELECT 
                 m.id,
+                m.match_no,
                 m.group_name,
                 t1.name as team1,
                 t2.name as team2,
@@ -26,7 +28,7 @@ router.get("/", async (req, res) => {
             JOIN teams t1 ON m.team1_id = t1.id
             JOIN teams t2 ON m.team2_id = t2.id
             LEFT JOIN teams tw ON m.toss_winner_id = tw.id
-            ORDER BY m.match_time
+            ORDER BY m.match_no ASC NULLS LAST, m.match_time ASC
         `);
         res.json(matches.rows);
     } catch (err) {
@@ -38,18 +40,18 @@ router.get("/", async (req, res) => {
 // CREATE MATCH
 router.post("/", async (req, res) => {
     try {
-        const { team1_id, team2_id, stage, round, group_name, match_time } = req.body;
+        const { team1_id, team2_id, stage, round, group_name, match_time, match_no } = req.body;
 
         if (group_name !== undefined) {
             await db.query(
-                `INSERT INTO matches(team1_id,team2_id,stage,round,group_name,match_time) VALUES($1,$2,$3,$4,$5,$6)`,
-                [team1_id, team2_id, stage, round, group_name, match_time]
+                `INSERT INTO matches(team1_id,team2_id,stage,round,group_name,match_time,match_no) VALUES($1,$2,$3,$4,$5,$6,$7)`,
+                [team1_id, team2_id, stage, round, group_name, match_time || null, match_no || null]
             );
         } else {
             // Optional fallback for older createMatch tests
             await db.query(
-                `INSERT INTO matches(team1_id,team2_id,stage,round,match_time) VALUES($1,$2,$3,$4,$5)`,
-                [team1_id, team2_id, stage, round, match_time]
+                `INSERT INTO matches(team1_id,team2_id,stage,round,match_time,match_no) VALUES($1,$2,$3,$4,$5,$6)`,
+                [team1_id, team2_id, stage, round, match_time || null, match_no || null]
             );
         }
         res.json({ message: "Match created" });
@@ -65,89 +67,9 @@ router.put("/:id", async (req, res) => {
         const { team1_score, team2_score, team1_scorers, team2_scorers, motm, team1_penalties, team2_penalties, toss_winner_id } = req.body;
         const { id } = req.params;
 
-        // Get the match to know the teams involved
-        const matchRes = await db.query("SELECT team1_id, team2_id, round, team1_score as old_t1, team2_score as old_t2 FROM matches WHERE id=$1", [id]);
-        if (matchRes.rows.length === 0) {
-            return res.status(404).json({ message: "Match not found" });
-        }
-        const { team1_id, team2_id, round, old_t1, old_t2 } = matchRes.rows[0];
-
-        // Update match score and details
-        await db.query(
-            "UPDATE matches SET team1_score=$1, team2_score=$2, team1_scorers=$3, team2_scorers=$4, motm=$5, team1_penalties=$6, team2_penalties=$7, toss_winner_id=$8 WHERE id=$9",
-            [team1_score, team2_score, team1_scorers || null, team2_scorers || null, motm || null, team1_penalties ?? null, team2_penalties ?? null, toss_winner_id || null, id]
-        );
-
-        if (round === "GROUP") {
-            // Revert previous result if it exists
-            if (old_t1 !== null && old_t2 !== null) {
-                const o_t1 = parseInt(old_t1, 10);
-                const o_t2 = parseInt(old_t2, 10);
-
-                if (o_t1 > o_t2) {
-                    await db.query("UPDATE standings SET wins=wins-1, points=points-3 WHERE team_id=$1", [team1_id]);
-                    await db.query("UPDATE standings SET losses=losses-1 WHERE team_id=$1", [team2_id]);
-                } else if (o_t1 < o_t2) {
-                    await db.query("UPDATE standings SET wins=wins-1, points=points-3 WHERE team_id=$1", [team2_id]);
-                    await db.query("UPDATE standings SET losses=losses-1 WHERE team_id=$1", [team1_id]);
-                } else {
-                    await db.query("UPDATE standings SET draws=draws-1, points=points-1 WHERE team_id=$1", [team1_id]);
-                    await db.query("UPDATE standings SET draws=draws-1, points=points-1 WHERE team_id=$1", [team2_id]);
-                }
-                await db.query("UPDATE standings SET goals_for=goals_for-$1, goals_against=goals_against-$2, played=played-1 WHERE team_id=$3", [o_t1, o_t2, team1_id]);
-                await db.query("UPDATE standings SET goals_for=goals_for-$1, goals_against=goals_against-$2, played=played-1 WHERE team_id=$3", [o_t2, o_t1, team2_id]);
-            }
-
-            // Standings calculation for new scores
-            const t1_s = parseInt(team1_score, 10);
-            const t2_s = parseInt(team2_score, 10);
-
-            if (t1_s > t2_s) {
-                // team1 win
-                await db.query(
-                    "UPDATE standings SET wins=wins+1, points=points+3 WHERE team_id=$1",
-                    [team1_id]
-                );
-                await db.query(
-                    "UPDATE standings SET losses=losses+1 WHERE team_id=$1",
-                    [team2_id]
-                );
-            } else if (t1_s < t2_s) {
-                // team2 win
-                await db.query(
-                    "UPDATE standings SET wins=wins+1, points=points+3 WHERE team_id=$1",
-                    [team2_id]
-                );
-                await db.query(
-                    "UPDATE standings SET losses=losses+1 WHERE team_id=$1",
-                    [team1_id]
-                );
-            } else {
-                // draw
-                await db.query(
-                    "UPDATE standings SET draws=draws+1, points=points+1 WHERE team_id=$1",
-                    [team1_id]
-                );
-                await db.query(
-                    "UPDATE standings SET draws=draws+1, points=points+1 WHERE team_id=$1",
-                    [team2_id]
-                );
-            }
-
-            // Update Goals
-            await db.query(
-                "UPDATE standings SET goals_for=goals_for+$1, goals_against=goals_against+$2, played=played+1 WHERE team_id=$3",
-                [t1_s, t2_s, team1_id]
-            );
-            await db.query(
-                "UPDATE standings SET goals_for=goals_for+$1, goals_against=goals_against+$2, played=played+1 WHERE team_id=$3",
-                [t2_s, t1_s, team2_id]
-            );
-
-            // Recalculate Goal Difference
-            await db.query(
-                "UPDATE standings SET goal_diff = goals_for - goals_against"
-            );
+        // Recalculate standings table from scratch
+        if (round === "GROUP" || round?.startsWith("Round")) {
+            await recalculateStandings();
         }
 
         res.json({ message: "Result and standings updated" });
@@ -160,12 +82,12 @@ router.put("/:id", async (req, res) => {
 // UPDATE MATCH DETAILS (Time/Teams)
 router.put("/:id/details", async (req, res) => {
     try {
-        const { team1_id, team2_id, group_name, match_time } = req.body;
+        const { team1_id, team2_id, group_name, match_time, match_no } = req.body;
         const { id } = req.params;
 
         await db.query(
-            "UPDATE matches SET team1_id=$1, team2_id=$2, group_name=$3, match_time=$4 WHERE id=$5",
-            [team1_id, team2_id, group_name || null, match_time || null, id]
+            "UPDATE matches SET team1_id=$1, team2_id=$2, group_name=$3, match_time=$4, match_no=$5 WHERE id=$6",
+            [team1_id, team2_id, group_name || null, match_time || null, match_no || null, id]
         );
         res.json({ message: "Match details updated" });
     } catch (err) {
@@ -177,11 +99,21 @@ router.put("/:id/details", async (req, res) => {
 // DELETE MATCH
 router.delete("/:id", async (req, res) => {
     const { id } = req.params;
+
+    // Get match round before deleting
+    const matchRes = await db.query("SELECT round FROM matches WHERE id=$1", [id]);
+    const round = matchRes.rows.length > 0 ? matchRes.rows[0].round : null;
+
     await db.query(
         "DELETE FROM matches WHERE id=$1",
         [id]
     );
-    res.json({ message: "Match deleted" });
+
+    if (round === "GROUP" || round?.startsWith("Round")) {
+        await recalculateStandings();
+    }
+
+    res.json({ message: "Match deleted and standings recalculated" });
 });
 
 module.exports = router;

@@ -78,15 +78,6 @@
 
                 <input id="teamName" placeholder="Team Name">
 
-                <select id="group">
-                    <option>A</option>
-                    <option>B</option>
-                    <option>C</option>
-                    <option>D</option>
-                    <option>E</option>
-                    <option>F</option>
-                </select>
-
                 <button onclick="createTeam()">Add Team</button>
 
                 <h3>Team List</h3>
@@ -104,17 +95,20 @@
                 <select id="team1"></select>
                 <select id="team2"></select>
 
-                <select id="groupSelect" onchange="loadTeamsByGroup()">
-                    <option value="">Select Group</option>
-                    <option value="A">Group A</option>
-                    <option value="B">Group B</option>
-                    <option value="C">Group C</option>
-                    <option value="D">Group D</option>
-                    <option value="E">Group E</option>
-                    <option value="F">Group F</option>
+                <select id="matchRound">
+                    <option value="Round 1">Round 1</option>
+                    <option value="Round 2">Round 2</option>
+                    <option value="Round 3">Round 3</option>
+                    <option value="Round 4">Round 4</option>
+                    <option value="Round 5">Round 5</option>
                 </select>
 
-                <input type="datetime-local" id="matchTime">
+                <input type="number" id="matchNo" placeholder="Match No (e.g. 1)">
+
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="datetime-local" id="matchTime" style="margin: 0; flex: 1;">
+                    <small style="color: #aaa;">(Leave blank for TBD)</small>
+                </div>
 
                 <input type="hidden" id="editMatchId">
                 <button id="btnCreateMatch" onclick="addMatch()">Create Match</button>
@@ -124,15 +118,7 @@
                 </div>
 
                 <h3>Matches</h3>
-                <select id="adminMatchFilter" onchange="loadMatches()">
-                    <option value="ALL">All Matches</option>
-                    <option value="A">Group A</option>
-                    <option value="B">Group B</option>
-                    <option value="C">Group C</option>
-                    <option value="D">Group D</option>
-                    <option value="E">Group E</option>
-                    <option value="F">Group F</option>
-                </select>
+
                 <ul id="matchList"></ul>
 
             </div>
@@ -166,12 +152,11 @@
 
                 <select id="resultGroupFilter" onchange="loadMatchesForResult()">
                     <option value="ALL">All Matches</option>
-                    <option value="A">Group A</option>
-                    <option value="B">Group B</option>
-                    <option value="C">Group C</option>
-                    <option value="D">Group D</option>
-                    <option value="E">Group E</option>
-                    <option value="F">Group F</option>
+                    <option value="Round 1">Round 1</option>
+                    <option value="Round 2">Round 2</option>
+                    <option value="Round 3">Round 3</option>
+                    <option value="Round 4">Round 4</option>
+                    <option value="Round 5">Round 5</option>
                     <option value="KNOCKOUTS">Knockouts</option>
                 </select>
 
@@ -261,7 +246,10 @@
                     <option>FINAL</option>
                 </select>
 
-                <input type="datetime-local" id="koTime">
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px; margin-bottom: 10px;">
+                    <input type="datetime-local" id="koTime" style="margin: 0; flex: 1;">
+                    <small style="color: #aaa;">(Leave blank for TBD)</small>
+                </div>
 
                 <button onclick="createKnockout()">Create Match</button>
 

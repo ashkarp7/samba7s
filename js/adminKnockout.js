@@ -30,13 +30,16 @@ async function loadKnockout() {
     list.innerHTML = "";
 
     matches
-        .filter(m => m.round !== "GROUP")
+        .filter(m => {
+            const isLeague = m.round === "GROUP" || m.round?.startsWith("Round");
+            return !isLeague;
+        })
         .forEach(match => {
             const li = document.createElement("li");
 
             li.innerHTML = `
-                ${match.round} : ${match.team1} vs ${match.team2}
-                <button onclick="removeKnockout(${match.id})">Delete</button>
+                <span>${match.round} : ${match.team1} vs ${match.team2} <small style="color: #ccc; margin-left: 10px;">${match.match_time ? new Date(match.match_time).toLocaleString() : 'TBD'}</small></span>
+                <button onclick="removeKnockout(${match.id})" style="padding: 5px 10px; background: #ff4d4d; color: white; border: none; border-radius: 4px; cursor: pointer; float: right;">Delete</button>
             `;
 
             list.appendChild(li);
@@ -52,7 +55,13 @@ async function createKnockout() {
     const team1 = document.getElementById("koTeam1").value;
     const team2 = document.getElementById("koTeam2").value;
     const round = document.getElementById("koRound").value;
-    const time = document.getElementById("koTime").value;
+    const timeVal = document.getElementById("koTime").value;
+    const time = timeVal ? new Date(timeVal).toISOString() : null;
+
+    if (team1 === team2) {
+        alert("Select two different teams");
+        return;
+    }
 
     await createMatch(team1, team2, "KNOCKOUT", round, time);
 

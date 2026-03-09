@@ -1,5 +1,4 @@
-async function loadTeamsByGroup() {
-    const group = document.getElementById("groupSelect").value;
+async function loadAllTeams() {
     const res = await fetch(`${API}/teams`);
     const teams = await res.json();
 
@@ -9,32 +8,38 @@ async function loadTeamsByGroup() {
     team1.innerHTML = "";
     team2.innerHTML = "";
 
-    teams
-        .filter(t => t.group_name === group)
-        .forEach(team => {
-            const opt1 = document.createElement("option");
-            opt1.value = team.id;
-            opt1.textContent = team.name;
+    teams.forEach(team => {
+        const opt1 = document.createElement("option");
+        opt1.value = team.id;
+        opt1.textContent = team.name;
 
-            const opt2 = opt1.cloneNode(true);
+        const opt2 = opt1.cloneNode(true);
 
-            team1.appendChild(opt1);
-            team2.appendChild(opt2);
-        });
+        team1.appendChild(opt1);
+        team2.appendChild(opt2);
+    });
 }
+
 async function loadMatches() {
     const matches = await getMatches();
     const list = document.getElementById("matchList");
     list.innerHTML = "";
 
-    const filterVal = document.getElementById("adminMatchFilter")?.value || "ALL";
+    const isLeagueMatch = (r) => r === "GROUP" || r?.startsWith("Round");
 
-    matches.filter(m => filterVal === "ALL" || m.group_name === filterVal)
+    matches.filter(m => isLeagueMatch(m.round))
+        .sort((a, b) => {
+            const noA = typeof a.match_no === 'number' ? a.match_no : 9999;
+            const noB = typeof b.match_no === 'number' ? b.match_no : 9999;
+            return noA - noB;
+        })
         .forEach(match => {
             const li = document.createElement("li");
+            const roundLabel = match.round === "GROUP" ? "League" : match.round;
+            const noLabel = match.match_no ? `Match ${match.match_no} - ` : "";
 
             li.innerHTML = `
-            <span>${match.team1} vs ${match.team2} <small style="color: #ccc; margin-left: 10px;">${match.match_time ? new Date(match.match_time).toLocaleString() : 'No Time'}</small></span>
+            <span><strong>${noLabel}[${roundLabel}]</strong> ${match.team1} vs ${match.team2} <small style="color: #ccc; margin-left: 10px;">${match.match_time ? new Date(match.match_time).toLocaleString() : 'TBD'}</small></span>
             <div>
                 <button onclick="editMatch(${match.id})" style="padding: 5px 10px; background: #555; color: white; border: none; border-radius: 4px; cursor: pointer;">Edit Match</button>
                 <button onclick="removeMatch(${match.id})" style="padding: 5px 10px; background: #ff4d4d; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 5px;">Delete</button>
@@ -48,8 +53,10 @@ async function loadMatches() {
 async function addMatch() {
     const team1 = document.getElementById("team1").value;
     const team2 = document.getElementById("team2").value;
-    const group = document.getElementById("groupSelect").value;
-    const time = document.getElementById("matchTime").value;
+    const roundVal = document.getElementById("matchRound").value || "GROUP";
+    const timeVal = document.getElementById("matchTime").value;
+    const time = timeVal ? new Date(timeVal).toISOString() : null;
+    const matchNo = document.getElementById("matchNo").value;
 
     if (team1 === team2) {
         alert("Select two different teams");
@@ -64,10 +71,11 @@ async function addMatch() {
         body: JSON.stringify({
             team1_id: team1,
             team2_id: team2,
-            group_name: group,
+            group_name: null,
             stage: "GROUP",
-            round: "GROUP",
-            match_time: time
+            round: roundVal,
+            match_time: time,
+            match_no: matchNo ? parseInt(matchNo, 10) : null
         })
     });
 
@@ -92,9 +100,10 @@ async function loadMatchesForResult() {
     select.innerHTML = "";
 
     const filtered = matches.filter(m => {
+        const isLeague = m.round === "GROUP" || m.round?.startsWith("Round");
         if (groupFilter === "ALL") return true;
-        if (groupFilter === "KNOCKOUTS") return m.round !== "GROUP";
-        return m.group_name === groupFilter;
+        if (groupFilter === "KNOCKOUTS") return !isLeague;
+        return m.round === groupFilter;
     });
 
     filtered.forEach(match => {
@@ -102,7 +111,12 @@ async function loadMatchesForResult() {
         option.value = match.id;
         option.dataset.team1 = match.team1;
         option.dataset.team2 = match.team2;
-        option.textContent = `${match.round !== "GROUP" ? match.round + ' : ' : ''}${match.team1} vs ${match.team2}`;
+
+        const isLeague = match.round === "GROUP" || match.round?.startsWith("Round");
+        const roundLabel = isLeague ? match.round : match.round;
+        const noLabel = match.match_no ? `Match ${match.match_no} - ` : "";
+
+        option.textContent = `${noLabel}[${roundLabel}] ${match.team1} vs ${match.team2}`;
         select.appendChild(option);
     });
 
@@ -130,8 +144,9 @@ async function loadMatchesForResult() {
             li.style.background = "rgba(255,255,255,0.05)";
             li.style.borderRadius = "6px";
 
+            const noLabel = match.match_no ? `Match ${match.match_no} - ` : "";
             li.innerHTML = `
-                <span><strong>${match.team1_score} - ${match.team2_score}</strong> | ${match.team1} vs ${match.team2}</span>
+                <span><strong>${match.team1_score} - ${match.team2_score}</strong> | ${noLabel}${match.team1} vs ${match.team2}</span>
                 <button onclick="editMatchResult(${match.id})" style="padding: 5px 10px; background: #eaff00; color: black; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">Edit Score</button>
             `;
             completedList.appendChild(li);
@@ -205,8 +220,6 @@ async function loadPlayersForMatch() {
     const team1Name = opt.dataset.team1;
     const team2Name = opt.dataset.team2;
 
-    // We need to fetch the original match object or team IDs to fetch players reliably
-    // A quick hack is to fetch all teams and match the exact name
     const teamsRes = await fetch(`${API}/teams`);
     const teams = await teamsRes.json();
 
@@ -308,6 +321,7 @@ function addScorer(teamNum) {
     list.appendChild(li);
 }
 
+loadAllTeams();
 loadMatches();
 loadMatchesForResult();
 
@@ -319,24 +333,35 @@ async function editMatch(id) {
     const match = matches.find(m => m.id === id);
     if (!match) return;
 
-    // We must find the exact team IDs for the dropdowns. 
-    // Re-fetch teams to align names -> IDs
     const tRes = await fetch(`${API}/teams`);
     const teams = await tRes.json();
 
     const t1 = teams.find(t => t.name === match.team1);
     const t2 = teams.find(t => t.name === match.team2);
 
-    document.getElementById("groupSelect").value = match.group_name || "";
-    await loadTeamsByGroup(); // repopulates team selects based on group
+    await loadAllTeams();
 
     if (t1) document.getElementById("team1").value = t1.id;
     if (t2) document.getElementById("team2").value = t2.id;
 
     if (match.match_time) {
-        document.getElementById("matchTime").value = new Date(match.match_time).toISOString().slice(0, 16);
+        const d = new Date(match.match_time);
+        // Correct timezone offset for HTML datetime-local
+        document.getElementById("matchTime").value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
     } else {
         document.getElementById("matchTime").value = "";
+    }
+
+    if (match.match_no) {
+        document.getElementById("matchNo").value = match.match_no;
+    } else {
+        document.getElementById("matchNo").value = "";
+    }
+
+    if (match.round && match.round.startsWith("Round")) {
+        document.getElementById("matchRound").value = match.round;
+    } else {
+        document.getElementById("matchRound").value = "Round 1";
     }
 
     document.getElementById("editMatchId").value = id;
@@ -348,19 +373,24 @@ function cancelMatchEdit() {
     document.getElementById("editMatchId").value = "";
     document.getElementById("team1").innerHTML = "";
     document.getElementById("team2").innerHTML = "";
-    document.getElementById("groupSelect").value = "";
+    document.getElementById("matchRound").value = "Round 1";
+    document.getElementById("matchNo").value = "";
     document.getElementById("matchTime").value = "";
 
     document.getElementById("btnCreateMatch").style.display = "block";
     document.getElementById("btnUpdateMatch").style.display = "none";
+
+    // Repopulate dropdowns since we cleared them
+    loadAllTeams();
 }
 
 async function updateMatchDetails() {
     const id = document.getElementById("editMatchId").value;
     const team1 = document.getElementById("team1").value;
     const team2 = document.getElementById("team2").value;
-    const group = document.getElementById("groupSelect").value;
-    const time = document.getElementById("matchTime").value;
+    const timeVal = document.getElementById("matchTime").value;
+    const time = timeVal ? new Date(timeVal).toISOString() : null;
+    const matchNo = document.getElementById("matchNo").value;
 
     if (!id || !team1 || !team2) return;
 
@@ -371,8 +401,9 @@ async function updateMatchDetails() {
             body: JSON.stringify({
                 team1_id: team1,
                 team2_id: team2,
-                group_name: group,
-                match_time: time || null
+                group_name: null,
+                match_time: time,
+                match_no: matchNo ? parseInt(matchNo, 10) : null
             })
         });
 
