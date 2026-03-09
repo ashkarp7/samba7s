@@ -20,7 +20,7 @@ router.get("/", async (req, res) => {
             COALESCE(standings.points, 0) as points
             FROM teams
             LEFT JOIN standings ON teams.id = standings.team_id
-            ORDER BY teams.group_name, points DESC, goal_diff DESC, goals_for DESC
+            ORDER BY points DESC, goal_diff DESC, goals_for DESC
             `);
         res.json(table.rows);
     } catch (err) {

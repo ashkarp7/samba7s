@@ -18,7 +18,7 @@ async function getTeams() {
 
 }
 
-async function addTeam(name, group) {
+async function addTeam(name) {
 
     await fetch(`${API}/teams`, {
         method: "POST",
@@ -26,8 +26,7 @@ async function addTeam(name, group) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            name: name,
-            group_name: group
+            name: name
         })
     });
 

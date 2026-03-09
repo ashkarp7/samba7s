@@ -8,38 +8,36 @@ async function loadAdminStandingsTables() {
 
         container.innerHTML = "";
 
-        const groups = { "A": [], "B": [], "C": [], "D": [], "E": [], "F": [] };
-        standings.forEach(row => {
-            if (groups[row.group_name]) {
-                groups[row.group_name].push(row);
-            }
-        });
-
-        for (const [groupName, teams] of Object.entries(groups)) {
-            const tableDiv = document.createElement("div");
-            tableDiv.style.marginBottom = "30px";
-            tableDiv.innerHTML = `
-                <h3 style="color: #eaff00; margin-bottom: 10px;">Group ${groupName}</h3>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: center; background: rgba(255,255,255,0.05);">
-                        <thead>
-                            <tr style="background: #111; color: #eaff00;">
-                                <th style="padding: 10px; text-align: left;">Team</th>
-                                <th style="padding: 10px; width: 60px;">P</th>
-                                <th style="padding: 10px; width: 60px;">W</th>
-                                <th style="padding: 10px; width: 60px;">D</th>
-                                <th style="padding: 10px; width: 60px;">L</th>
-                                <th style="padding: 10px; width: 60px;">GF</th>
-                                <th style="padding: 10px; width: 60px;">GA</th>
-                                <th style="padding: 10px; width: 60px;">GD</th>
-                                <th style="padding: 10px; width: 60px;">PTS</th>
-                                <th style="padding: 10px; width: 80px;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${teams.length === 0 ? `<tr><td colspan="10" style="padding: 10px; text-align: center; opacity: 0.5;">No teams in group</td></tr>` :
-                    teams.map(t => `
+        const tableDiv = document.createElement("div");
+        tableDiv.style.marginBottom = "30px";
+        tableDiv.innerHTML = `
+            <h3 style="color: #eaff00; margin-bottom: 10px;">All Teams</h3>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: center; background: rgba(255,255,255,0.05);">
+                    <thead>
+                        <tr style="background: #111; color: #eaff00;">
+                            <th style="padding: 10px; width: 40px;">Pos</th>
+                            <th style="padding: 10px; text-align: left;">Team</th>
+                            <th style="padding: 10px; width: 60px;">P</th>
+                            <th style="padding: 10px; width: 60px;">W</th>
+                            <th style="padding: 10px; width: 60px;">D</th>
+                            <th style="padding: 10px; width: 60px;">L</th>
+                            <th style="padding: 10px; width: 60px;">GF</th>
+                            <th style="padding: 10px; width: 60px;">GA</th>
+                            <th style="padding: 10px; width: 60px;">GD</th>
+                            <th style="padding: 10px; width: 60px;">PTS</th>
+                            <th style="padding: 10px; width: 80px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${standings.length === 0 ? `<tr><td colspan="11" style="padding: 10px; text-align: center; opacity: 0.5;">No teams yet</td></tr>` :
+                standings.sort((a, b) => {
+                    if (b.points !== a.points) return b.points - a.points;
+                    if (b.goal_diff !== a.goal_diff) return b.goal_diff - a.goal_diff;
+                    return b.goals_for - a.goals_for;
+                }).map((t, index) => `
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                    <td style="padding: 10px; font-weight: bold; color: #888;">${index + 1}</td>
                                     <td style="padding: 10px; text-align: left; font-weight: bold;">${t.name}</td>
                                     <td style="padding: 5px;"><input id="p_${t.team_id}" type="number" value="${t.played}" style="width: 100%; padding: 5px; text-align: center; background: #222; color: white; border: 1px solid #444; border-radius: 4px;"></td>
                                     <td style="padding: 5px;"><input id="w_${t.team_id}" type="number" value="${t.wins}" style="width: 100%; padding: 5px; text-align: center; background: #222; color: white; border: 1px solid #444; border-radius: 4px;"></td>
@@ -52,12 +50,11 @@ async function loadAdminStandingsTables() {
                                     <td style="padding: 5px;"><button onclick="saveStandingsRow(${t.team_id})" style="padding: 5px 10px; background: #eaff00; color: #000; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Save</button></td>
                                 </tr>
                             `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            container.appendChild(tableDiv);
-        }
+                    </tbody>
+                </table>
+            </div>
+        `;
+        container.appendChild(tableDiv);
     } catch (err) {
         console.error("Error loading admin standings tables:", err);
     }

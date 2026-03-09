@@ -8,7 +8,7 @@ async function loadRosterTeams() {
         teams.forEach(team => {
             const opt = document.createElement("option");
             opt.value = team.id;
-            opt.textContent = `${team.name} (Group ${team.group_name})`;
+            opt.textContent = team.name;
             sel.appendChild(opt);
         });
     } catch (err) {

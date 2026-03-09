@@ -10,7 +10,8 @@ router.get("/", async (req, res) => {
 
 // ADD TEAM
 router.post("/", async (req, res) => {
-    const { name, group_name } = req.body;
+    const { name } = req.body;
+    const group_name = "ALL"; // Single league — no groups
     const team = await db.query(
         "INSERT INTO teams(name, group_name) VALUES($1,$2) RETURNING id",
         [name, group_name]

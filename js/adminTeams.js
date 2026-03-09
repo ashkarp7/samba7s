@@ -15,16 +15,7 @@ async function loadTeams() {
 
         li.innerHTML = `
             <span style="flex-grow: 1;">${team.name}</span>
-            <select id="updateGroup-${team.id}" style="padding: 5px; border-radius: 4px;">
-                <option value="A" ${team.group_name === 'A' ? 'selected' : ''}>A</option>
-                <option value="B" ${team.group_name === 'B' ? 'selected' : ''}>B</option>
-                <option value="C" ${team.group_name === 'C' ? 'selected' : ''}>C</option>
-                <option value="D" ${team.group_name === 'D' ? 'selected' : ''}>D</option>
-                <option value="E" ${team.group_name === 'E' ? 'selected' : ''}>E</option>
-                <option value="F" ${team.group_name === 'F' ? 'selected' : ''}>F</option>
-            </select>
-            <button onclick="updateTeamGroup(${team.id})" style="padding: 5px 10px; background: #eaff00; color: #000; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">Update Group</button>
-            <button onclick="editTeam(${team.id}, '${team.name.replace(/'/g, "\\'")}')" style="padding: 5px 10px; background: #555; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">Edit</button>
+            <button onclick="editTeam(${team.id}, '${team.name.replace(/'/g, "\\'")}')\" style="padding: 5px 10px; background: #555; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">Edit</button>
             <button onclick="removeTeam(${team.id})" style="padding: 5px 10px; background: #ff4d4d; color: white; border: none; border-radius: 4px; cursor: pointer;">Delete</button>
         `;
 
@@ -37,9 +28,8 @@ async function loadTeams() {
 async function createTeam() {
 
     const name = document.getElementById("teamName").value;
-    const group = document.getElementById("group").value;
 
-    await addTeam(name, group);
+    await addTeam(name);
 
     loadTeams();
 
@@ -48,25 +38,6 @@ async function createTeam() {
 async function removeTeam(id) {
     await deleteTeam(id);
     loadTeams();
-}
-
-async function updateTeamGroup(id) {
-    const group_name = document.getElementById(`updateGroup-${id}`).value;
-    try {
-        const res = await fetch(`${API}/teams/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ group_name })
-        });
-        if (res.ok) {
-            alert("Team group updated!");
-            loadTeams();
-        } else {
-            alert("Error updating team group");
-        }
-    } catch (err) {
-        console.error("Failed to update team group", err);
-    }
 }
 
 loadTeams();
