@@ -7,7 +7,7 @@ router.get("/", async (req, res) => {
     try {
         const { team_id } = req.query;
         let query = `
-            SELECT p.id, p.name, p.team_id, t.name as team_name, p.goals, p.clean_sheets 
+            SELECT p.id, p.name, p.team_id, t.name as team_name, p.goals, p.clean_sheets, p.yellow_cards, p.red_cards
             FROM players p
             JOIN teams t ON p.team_id = t.id
         `;
@@ -55,11 +55,11 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const { goals, clean_sheets } = req.body;
+        const { goals, clean_sheets, yellow_cards, red_cards } = req.body;
 
         await db.query(
-            "UPDATE players SET goals = $1, clean_sheets = $2 WHERE id = $3",
-            [goals, clean_sheets, id]
+            "UPDATE players SET goals = $1, clean_sheets = $2, yellow_cards = $3, red_cards = $4 WHERE id = $5",
+            [goals, clean_sheets, yellow_cards, red_cards, id]
         );
         res.json({ message: "Player stats updated" });
     } catch (err) {

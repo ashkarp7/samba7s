@@ -1,4 +1,4 @@
-const API = "https://samba7s.onrender.com";
+const API = "http://localhost:5000";
 
 // Fires instantly on page load to wake Render out of cold start
 // before any real data request is made.

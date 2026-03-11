@@ -42,8 +42,10 @@ async function loadPlayerStatsForTeam() {
             <thead>
                 <tr style="background: #111; color: #eaff00;">
                     <th style="padding: 10px; text-align: left;">Player</th>
-                    <th style="padding: 10px; width: 100px;">Goals</th>
-                    <th style="padding: 10px; width: 100px;">Clean Sheets</th>
+                    <th style="padding: 10px; width: 80px;">Goals</th>
+                    <th style="padding: 10px; width: 80px;">CS</th>
+                    <th style="padding: 10px; width: 80px;">Yellows</th>
+                    <th style="padding: 10px; width: 80px;">Reds</th>
                     <th style="padding: 10px; width: 80px;">Action</th>
                 </tr>
             </thead>
@@ -53,6 +55,8 @@ async function loadPlayerStatsForTeam() {
                         <td style="padding: 10px; text-align: left; font-weight: bold;">${p.name}</td>
                         <td style="padding: 5px;"><input id="g_${p.id}" type="number" value="${p.goals}" style="width: 100%; padding: 5px; text-align: center; background: #222; color: white; border: 1px solid #444; border-radius: 4px;"></td>
                         <td style="padding: 5px;"><input id="cs_${p.id}" type="number" value="${p.clean_sheets}" style="width: 100%; padding: 5px; text-align: center; background: #222; color: white; border: 1px solid #444; border-radius: 4px;"></td>
+                        <td style="padding: 5px;"><input id="yc_${p.id}" type="number" value="${p.yellow_cards || 0}" style="width: 100%; padding: 5px; text-align: center; background: #222; color: #d4ff00; border: 1px solid #444; border-radius: 4px;"></td>
+                        <td style="padding: 5px;"><input id="rc_${p.id}" type="number" value="${p.red_cards || 0}" style="width: 100%; padding: 5px; text-align: center; background: #222; color: #ff3333; border: 1px solid #444; border-radius: 4px;"></td>
                         <td style="padding: 5px;"><button onclick="savePlayerStats(${p.id})" style="padding: 5px 10px; background: #eaff00; color: #000; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Save</button></td>
                     </tr>
                 `).join('')}
@@ -69,12 +73,14 @@ async function loadPlayerStatsForTeam() {
 async function savePlayerStats(id) {
     const goals = parseInt(document.getElementById(`g_${id}`).value, 10);
     const clean_sheets = parseInt(document.getElementById(`cs_${id}`).value, 10);
+    const yellow_cards = parseInt(document.getElementById(`yc_${id}`).value, 10);
+    const red_cards = parseInt(document.getElementById(`rc_${id}`).value, 10);
 
     try {
         const res = await fetch(`${API}/players/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ goals, clean_sheets })
+            body: JSON.stringify({ goals, clean_sheets, yellow_cards, red_cards })
         });
 
         if (res.ok) {

@@ -9,7 +9,9 @@ async function initPlayersDB() {
                 name VARCHAR(255) NOT NULL,
                 team_id INT REFERENCES teams(id) ON DELETE CASCADE,
                 goals INT DEFAULT 0,
-                clean_sheets INT DEFAULT 0
+                clean_sheets INT DEFAULT 0,
+                yellow_cards INT DEFAULT 0,
+                red_cards INT DEFAULT 0
             );
         `);
         console.log("Players table verified.");

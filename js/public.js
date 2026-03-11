@@ -120,6 +120,16 @@ async function loadMatches() {
     };
 
     if (groupedMatches.GROUP.length > 0) {
+        groupedMatches.GROUP.sort((a, b) => {
+            const roundA = a.round || "GROUP";
+            const roundB = b.round || "GROUP";
+            if (roundA !== roundB) {
+                return roundA.localeCompare(roundB, undefined, { numeric: true, sensitivity: 'base' });
+            }
+            const matchNoA = a.match_no || 0;
+            const matchNoB = b.match_no || 0;
+            return matchNoA - matchNoB;
+        });
         groupedMatches.GROUP.forEach(renderCard);
     }
 
@@ -457,6 +467,16 @@ async function loadAllResults() {
     };
 
     if (groupedMatches.GROUP.length > 0) {
+        groupedMatches.GROUP.sort((a, b) => {
+            const roundA = a.round || "GROUP";
+            const roundB = b.round || "GROUP";
+            if (roundA !== roundB) {
+                return roundA.localeCompare(roundB, undefined, { numeric: true, sensitivity: 'base' });
+            }
+            const matchNoA = a.match_no || 0;
+            const matchNoB = b.match_no || 0;
+            return matchNoA - matchNoB;
+        });
         groupedMatches.GROUP.forEach(renderCard);
     }
 
@@ -478,13 +498,19 @@ async function loadStats() {
 
         const topScorersGrid = document.getElementById("topGoalScorers");
         const topCsGrid = document.getElementById("topCleanSheets");
+        const topYcGrid = document.getElementById("topYellowCards");
+        const topRcGrid = document.getElementById("topRedCards");
         if (!topScorersGrid || !topCsGrid) return;
 
         topScorersGrid.innerHTML = "";
         topCsGrid.innerHTML = "";
+        if (topYcGrid) topYcGrid.innerHTML = "";
+        if (topRcGrid) topRcGrid.innerHTML = "";
 
         const activeScorers = players.filter(p => p.goals > 0).sort((a, b) => b.goals - a.goals).slice(0, 5);
         const activeKeepers = players.filter(p => p.clean_sheets > 0).sort((a, b) => b.clean_sheets - a.clean_sheets).slice(0, 5);
+        const activeYellows = players.filter(p => p.yellow_cards > 0).sort((a, b) => b.yellow_cards - a.yellow_cards).slice(0, 5);
+        const activeReds = players.filter(p => p.red_cards > 0).sort((a, b) => b.red_cards - a.red_cards).slice(0, 5);
 
         activeScorers.forEach((p, index) => {
             const div = document.createElement("div");
@@ -509,6 +535,38 @@ async function loadStats() {
             `;
             topCsGrid.appendChild(div);
         });
+
+        if (topYcGrid && activeYellows.length > 0) {
+            activeYellows.forEach((p, index) => {
+                const div = document.createElement("div");
+                div.className = "match-card";
+                div.style.position = "relative";
+                div.innerHTML = `
+                    <div style="position: absolute; top: -10px; left: -10px; background: #d4ff00; color: #000; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; border: 2px solid #111;">${index + 1}</div>
+                    <div><span style="color:#ffffff; font-weight:bold; font-size: 18px;">${p.name}</span> <div style="font-size: 12px; color: #aaa;">${p.team_name}</div></div>
+                    <div style="font-size: 24px; font-weight: bold; color: #d4ff00;">${p.yellow_cards} <span style="font-size: 12px; font-weight: normal; opacity: 0.8;">Yellows</span></div>
+                `;
+                topYcGrid.appendChild(div);
+            });
+        } else if (topYcGrid) {
+            topYcGrid.parentElement.style.display = 'none';
+        }
+
+        if (topRcGrid && activeReds.length > 0) {
+            activeReds.forEach((p, index) => {
+                const div = document.createElement("div");
+                div.className = "match-card";
+                div.style.position = "relative";
+                div.innerHTML = `
+                    <div style="position: absolute; top: -10px; left: -10px; background: #ff3333; color: #fff; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; border: 2px solid #111;">${index + 1}</div>
+                    <div><span style="color:#ffffff; font-weight:bold; font-size: 18px;">${p.name}</span> <div style="font-size: 12px; color: #aaa;">${p.team_name}</div></div>
+                    <div style="font-size: 24px; font-weight: bold; color: #ff3333;">${p.red_cards} <span style="font-size: 12px; font-weight: normal; opacity: 0.8;">Reds</span></div>
+                `;
+                topRcGrid.appendChild(div);
+            });
+        } else if (topRcGrid) {
+            topRcGrid.parentElement.style.display = 'none';
+        }
 
     } catch (err) {
         console.error("Error loading player stats", err);

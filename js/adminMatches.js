@@ -29,6 +29,11 @@ async function loadMatches() {
 
     matches.filter(m => isLeagueMatch(m.round))
         .sort((a, b) => {
+            const roundA = a.round || "GROUP";
+            const roundB = b.round || "GROUP";
+            if (roundA !== roundB) {
+                return roundA.localeCompare(roundB, undefined, { numeric: true, sensitivity: 'base' });
+            }
             const noA = typeof a.match_no === 'number' ? a.match_no : 9999;
             const noB = typeof b.match_no === 'number' ? b.match_no : 9999;
             return noA - noB;
@@ -104,6 +109,17 @@ async function loadMatchesForResult() {
         if (groupFilter === "ALL") return true;
         if (groupFilter === "KNOCKOUTS") return !isLeague;
         return m.round === groupFilter;
+    });
+
+    filtered.sort((a, b) => {
+        const roundA = a.round || "GROUP";
+        const roundB = b.round || "GROUP";
+        if (roundA !== roundB) {
+            return roundA.localeCompare(roundB, undefined, { numeric: true, sensitivity: 'base' });
+        }
+        const noA = typeof a.match_no === 'number' ? a.match_no : 9999;
+        const noB = typeof b.match_no === 'number' ? b.match_no : 9999;
+        return noA - noB;
     });
 
     filtered.forEach(match => {
