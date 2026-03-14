@@ -32,7 +32,6 @@ async function loadStandings() {
         } else {
             data.sort((a, b) => {
                 if (b.points !== a.points) return b.points - a.points;
-                if ((b.manual_position || 0) !== (a.manual_position || 0)) return (b.manual_position || 0) - (a.manual_position || 0);
                 if (b.goal_diff !== a.goal_diff) return b.goal_diff - a.goal_diff;
                 return b.goals_for - a.goals_for;
             }).forEach((team, index) => {
