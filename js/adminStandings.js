@@ -26,16 +26,13 @@ async function loadAdminStandingsTables() {
                             <th style="padding: 10px; width: 60px;">GA</th>
                             <th style="padding: 10px; width: 60px;">GD</th>
                             <th style="padding: 10px; width: 60px;">PTS</th>
+                            <th style="padding: 10px; width: 60px;">Order</th>
                             <th style="padding: 10px; width: 80px;">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${standings.length === 0 ? `<tr><td colspan="11" style="padding: 10px; text-align: center; opacity: 0.5;">No teams yet</td></tr>` :
-                standings.sort((a, b) => {
-                    if (b.points !== a.points) return b.points - a.points;
-                    if (b.goal_diff !== a.goal_diff) return b.goal_diff - a.goal_diff;
-                    return b.goals_for - a.goals_for;
-                }).map((t, index) => `
+                        ${standings.length === 0 ? `<tr><td colspan="12" style="padding: 10px; text-align: center; opacity: 0.5;">No teams yet</td></tr>` :
+                standings.map((t, index) => `
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
                                     <td style="padding: 10px; font-weight: bold; color: #888;">${index + 1}</td>
                                     <td style="padding: 10px; text-align: left; font-weight: bold;">${t.name}</td>
@@ -47,6 +44,7 @@ async function loadAdminStandingsTables() {
                                     <td style="padding: 5px;"><input id="ga_${t.team_id}" type="number" value="${t.goals_against}" style="width: 100%; padding: 5px; text-align: center; background: #222; color: white; border: 1px solid #444; border-radius: 4px;"></td>
                                     <td style="padding: 5px;"><input id="gd_${t.team_id}" type="number" value="${t.goal_diff}" style="width: 100%; padding: 5px; text-align: center; background: #222; color: white; border: 1px solid #444; border-radius: 4px;"></td>
                                     <td style="padding: 5px;"><input id="pts_${t.team_id}" type="number" value="${t.points}" style="width: 100%; padding: 5px; text-align: center; background: #eaff00; color: black; border: 1px solid #eaff00; border-radius: 4px; font-weight: bold;"></td>
+                                    <td style="padding: 5px;"><input id="ord_${t.team_id}" type="number" value="${t.manual_position || 0}" style="width: 100%; padding: 5px; text-align: center; background: #222; color: #eaff00; border: 1px solid #444; border-radius: 4px;"></td>
                                     <td style="padding: 5px;"><button onclick="saveStandingsRow(${t.team_id})" style="padding: 5px 10px; background: #eaff00; color: #000; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Save</button></td>
                                 </tr>
                             `).join('')}
@@ -69,7 +67,8 @@ async function saveStandingsRow(team_id) {
         goals_for: parseInt(document.getElementById(`gf_${team_id}`).value, 10),
         goals_against: parseInt(document.getElementById(`ga_${team_id}`).value, 10),
         goal_diff: parseInt(document.getElementById(`gd_${team_id}`).value, 10),
-        points: parseInt(document.getElementById(`pts_${team_id}`).value, 10)
+        points: parseInt(document.getElementById(`pts_${team_id}`).value, 10),
+        manual_position: parseInt(document.getElementById(`ord_${team_id}`).value, 10)
     };
 
     try {
